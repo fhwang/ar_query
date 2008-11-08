@@ -15,43 +15,48 @@ describe ARQuery do
     end
   end
   
-  describe "#conditions" do
-    describe "starting with #condition_sql=" do
-      before :all do
-        @ar_query = ARQuery.new :per_page => 10
-        @ar_query.condition_sql = "fname is not null"
-        @ar_query.condition_sql << "lname is not null"
-      end
-      
-      it 'should join the conditions with an AND' do
-        @ar_query[:conditions].should ==
-            "(fname is not null) AND (lname is not null)"
-      end
+  describe "#condition_sqls <<" do
+    before :all do
+      @ar_query = ARQuery.new :per_page => 10
+      @ar_query.condition_sqls << "fname is not null"
+      @ar_query.condition_sqls << "lname is not null"
     end
     
-    describe "starting with #condition_sql <<" do
+    it 'should join the conditions with an AND' do
+      @ar_query[:conditions].should ==
+          "(fname is not null) AND (lname is not null)"
+    end
+  end
+    
+  describe '[:conditions]' do
+    describe 'with bind vars' do
       before :all do
         @ar_query = ARQuery.new :per_page => 10
-        @ar_query.condition_sql << "fname is not null"
-        @ar_query.condition_sql << "lname is not null"
+        @ar_query.condition_sqls << "fname = ?"
+        @ar_query.condition_sqls << "lname = ?"
       end
       
-      it 'should join the conditions with an AND' do
-        @ar_query[:conditions].should ==
-            "(fname is not null) AND (lname is not null)"
+      describe 'using appends' do
+        before :all do
+          @ar_query.bind_vars << 'Francis'
+          @ar_query.bind_vars << 'Hwang'
+        end
+        
+        it 'should put the bind_vars at the end of the conditions array' do
+          @ar_query[:conditions].should ==
+            [ "(fname = ?) AND (lname = ?)", 'Francis', 'Hwang' ]
+        end
       end
-    end
-    
-    describe "trying to call #condition_sql= after the first #condition_sql call" do
-      it 'should raise an error' do
-        lambda {
-          @ar_query = ARQuery.new :per_page => 10
-          @ar_query.condition_sql << "fname is not null"
-          @ar_query.condition_sql = "lname is not null"
-        }.should raise_error(
-          RuntimeError,
-          /You already initialized condition_sql, maybe you want to call condition_sql << instead\?/
-        )
+      
+      describe 'using assignment' do
+        before :all do
+          @ar_query.bind_vars = %w( Francis Hwang )
+        end
+        
+        it 'should put the bind_vars at the end of the conditions array' do
+          @ar_query[:conditions].should ==
+            [ "(fname = ?) AND (lname = ?)", 'Francis', 'Hwang' ]
+        end
       end
     end
   end
