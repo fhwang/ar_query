@@ -4,8 +4,9 @@ class ARQuery < Hash
   attr_accessor :bind_vars, :boolean_join
   attr_reader   :condition_sqls
   
-  def initialize(initial_values=nil)
-    super
+  def initialize(initial_values={})
+    super nil
+    initial_values.each do |k,v| self[k] = v; end
     @bind_vars = []
     @condition_sqls = []
     @boolean_join = :and

@@ -3,6 +3,7 @@ require File.dirname(__FILE__) + '/../lib/ar_query'
 describe ARQuery do
   it 'should be a kind of Hash' do
     @ar_query = ARQuery.new
+    # This is required because ActiveRecord.find uses args.extract_options!
     @ar_query.is_a?(::Hash).should be_true
   end
   
@@ -12,6 +13,21 @@ describe ARQuery do
     end
     
     it 'should not have conditions' do
+      @ar_query[:conditions].should be_nil
+    end
+  end
+  
+  describe '#initialize with values' do
+    before :all do
+      @ar_query = ARQuery.new(:order => 'id desc', :limit => 25)
+    end
+    
+    it 'should have those values in the hash' do
+      @ar_query[:order].should == 'id desc'
+      @ar_query[:limit].should == 25
+    end
+    
+    it 'should not have other values in the hash' do
       @ar_query[:conditions].should be_nil
     end
   end
