@@ -1,6 +1,11 @@
 require File.dirname(__FILE__) + '/../lib/ar_query'
 
 describe ARQuery do
+  it 'should be a kind of Hash' do
+    @ar_query = ARQuery.new
+    @ar_query.is_a?(::Hash).should be_true
+  end
+  
   describe '#initialize with no values' do
     before :all do
       @ar_query = ARQuery.new

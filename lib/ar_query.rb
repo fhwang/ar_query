@@ -1,10 +1,10 @@
 require 'delegate'
 
-class ARQuery < DelegateClass( Hash )
+class ARQuery < Hash
   attr_accessor :bind_vars, :boolean_join
   attr_reader   :condition_sqls
   
-  def initialize(initial_values={})
+  def initialize(initial_values=nil)
     super
     @bind_vars = []
     @condition_sqls = []
