@@ -1,27 +1,9 @@
 require File.dirname(__FILE__) + '/../lib/ar_query'
 
 describe ARQuery do
-  describe '#initialize' do
-    before :all do
-      @ar_query = ARQuery.new :per_page => 10
-    end
-    
-    it 'should set an initial value' do
-      @ar_query[:per_page].should == 10
-    end
-    
-    it 'should return nil conditions by default' do
-      @ar_query[:conditions].should be_nil
-    end
-  end
-  
   describe '#initialize with no values' do
     before :all do
       @ar_query = ARQuery.new
-    end
-    
-    it 'should not have :per_page' do
-      @ar_query[:per_page].should be_nil
     end
     
     it 'should not have conditions' do
@@ -31,7 +13,7 @@ describe ARQuery do
   
   describe "#condition_sqls <<" do
     before :all do
-      @ar_query = ARQuery.new :per_page => 10
+      @ar_query = ARQuery.new
       @ar_query.condition_sqls << "fname is not null"
       @ar_query.condition_sqls << "lname is not null"
     end
@@ -44,7 +26,8 @@ describe ARQuery do
   
   describe '#condition_sqls << with OR as the boolean join' do
     before :all do
-      @ar_query = ARQuery.new :per_page => 10, :boolean_join => :or
+      @ar_query = ARQuery.new
+      @ar_query.boolean_join = :or
       @ar_query.condition_sqls << "fname is not null"
       @ar_query.condition_sqls << "lname is not null"
     end
@@ -58,7 +41,7 @@ describe ARQuery do
   describe '[:conditions]' do
     describe 'with bind vars' do
       before :all do
-        @ar_query = ARQuery.new :per_page => 10
+        @ar_query = ARQuery.new
         @ar_query.condition_sqls << "fname = ?"
         @ar_query.condition_sqls << "lname = ?"
       end
