@@ -4,7 +4,7 @@ class ARQuery < DelegateClass( Hash )
   attr_accessor :bind_vars
   attr_reader   :condition_sqls
   
-  def initialize( initial_values )
+  def initialize(initial_values={})
     super
     @bind_vars = []
     @condition_sqls = []

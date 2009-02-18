@@ -15,6 +15,20 @@ describe ARQuery do
     end
   end
   
+  describe '#initialize with no values' do
+    before :all do
+      @ar_query = ARQuery.new
+    end
+    
+    it 'should not have :per_page' do
+      @ar_query[:per_page].should be_nil
+    end
+    
+    it 'should not have conditions' do
+      @ar_query[:conditions].should be_nil
+    end
+  end
+  
   describe "#condition_sqls <<" do
     before :all do
       @ar_query = ARQuery.new :per_page => 10
