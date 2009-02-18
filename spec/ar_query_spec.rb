@@ -41,6 +41,19 @@ describe ARQuery do
           "(fname is not null) AND (lname is not null)"
     end
   end
+  
+  describe '#condition_sqls << with OR as the boolean join' do
+    before :all do
+      @ar_query = ARQuery.new :per_page => 10, :boolean_join => :or
+      @ar_query.condition_sqls << "fname is not null"
+      @ar_query.condition_sqls << "lname is not null"
+    end
+    
+    it 'should join the conditions with an OR' do
+      @ar_query[:conditions].should ==
+          "(fname is not null) OR (lname is not null)"
+    end
+  end
     
   describe '[:conditions]' do
     describe 'with bind vars' do
