@@ -1,4 +1,4 @@
-require 'rake'
+#require 'rake'
 
 Gem::Specification.new do |s|
   s.name = 'ar_query'
@@ -9,5 +9,5 @@ Gem::Specification.new do |s|
   s.summary = 'A utility class for building options for ActiveRecord.find.'
   s.email = 'sera@fhwang.net'
   s.homepage = 'http://github.com/fhwang/ar_query/tree/master'
-  s.files = Rake::FileList['lib/*.rb']
+  s.files = './lib/ar_query.rb'
 end
