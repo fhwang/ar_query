@@ -9,6 +9,6 @@ Gem::Specification.new do |s|
   s.homepage = 'http://github.com/fhwang/ar_query/tree/master'
   s.files = %w[
     init.rb install.rb lib lib/ar_query.rb MIT-LICENSE README
-    spec spec/ar_query.rb tasks tasks/ar_query_tasks.rake uninstall.rb
+    spec spec/ar_query_spec.rb tasks tasks/ar_query_tasks.rake uninstall.rb
   ]
 end
