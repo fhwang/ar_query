@@ -1,5 +1,3 @@
-#require 'rake'
-
 Gem::Specification.new do |s|
   s.name = 'ar_query'
   s.version = '0.0.1'
@@ -9,5 +7,8 @@ Gem::Specification.new do |s|
   s.summary = 'A utility class for building options for ActiveRecord.find.'
   s.email = 'sera@fhwang.net'
   s.homepage = 'http://github.com/fhwang/ar_query/tree/master'
-  s.files = './lib/ar_query.rb'
+  s.files = %w[
+    init.rb install.rb lib lib/ar_query.rb MIT-LICENSE README
+    spec spec/ar_query.rb tasks tasks/ar_query_tasks.rake uninstall.rb
+  ]
 end
