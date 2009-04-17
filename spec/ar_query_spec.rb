@@ -81,7 +81,7 @@ describe ARQuery do
           "(fname is not null) OR (lname is not null)"
     end
   end
-    
+  
   describe '[:conditions]' do
     describe 'with bind vars' do
       before :all do
@@ -112,6 +112,28 @@ describe ARQuery do
             [ "(fname = ?) AND (lname = ?)", 'Francis', 'Hwang' ]
         end
       end
+    end
+  end
+  
+  describe 'with a nested condition' do
+    before :all do
+      @ar_query = ARQuery.new
+      @ar_query.condition_sqls << "fname = ?"
+      @ar_query.bind_vars << 'Francis'
+      @ar_query.nest_condition do |nested|
+        nested.boolean_join = :or
+        nested.condition_sqls << 'lname = ?'
+        nested.condition_sqls << 'lname = ?'
+        nested.bind_vars << 'Hwang'
+        nested.bind_vars << 'Bacon'
+      end
+    end
+    
+    it 'should generate nested conditions in SQL' do
+      @ar_query.to_hash[:conditions].should == [
+        "(fname = ?) AND ((lname = ?) OR (lname = ?))",
+        'Francis', 'Hwang', 'Bacon'
+      ]
     end
   end
   
