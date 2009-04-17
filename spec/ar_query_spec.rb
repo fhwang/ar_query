@@ -1,10 +1,48 @@
+require 'activesupport'
 require File.dirname(__FILE__) + '/../lib/ar_query'
 
 describe ARQuery do
-  it 'should be a kind of Hash' do
-    @ar_query = ARQuery.new
-    # This is required because ActiveRecord.find uses args.extract_options!
-    @ar_query.is_a?(::Hash).should be_true
+  describe 'when trying to pass itself off as a hash' do
+    before :all do
+      @ar_query = ARQuery.new :limit => 95
+    end
+    
+    it 'should handle is_a?' do
+      # This is required because ActiveRecord.find uses args.extract_options!
+      @ar_query.is_a?(::Hash).should be_true
+    end
+    
+    it 'should respond to :except' do
+      # expected by mislav-will_paginate finder.rb
+      excepted = @ar_query.except :limit
+      excepted.should be_empty
+    end
+    
+    it 'should respond to :symbolize_keys' do
+      # expected by mislav-will_paginate finder.rb
+      @ar_query.respond_to?(:symbolize_keys).should be_true
+      symbolized = @ar_query.symbolize_keys
+      symbolized[:limit].should == 95
+    end
+    
+    it 'should respond to :update' do
+      dup = @ar_query.dup
+      dup.update :offset => 500
+      dup[:offset].should == 500
+      dup[:limit].should == 95
+    end
+  end
+  
+  describe '#dup' do
+    before :all do
+      @ar_query = ARQuery.new :limit => 95
+      @ar_query_dup = @ar_query.dup
+    end
+    
+    it 'should deep-copy its simple values hash' do
+      @ar_query_dup.delete :limit
+      @ar_query[:limit].should == 95
+    end
   end
   
   describe '#initialize with no values' do
