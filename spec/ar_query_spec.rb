@@ -15,6 +15,19 @@ describe ARQuery do
     it 'should not have conditions' do
       @ar_query[:conditions].should be_nil
     end
+    
+    it 'should not have joins' do
+      @ar_query[:joins].should be_nil
+    end
+    
+    it 'should not let you assign like a hash' do
+      lambda {
+        @ar_query[:conditions] = "foo = 'bar'"
+      }.should raise_error(NoMethodError)
+      lambda {
+        @ar_query[:joins] = "foo = 'bar'"
+      }.should raise_error(NoMethodError)
+    end
   end
   
   describe '#initialize with values' do
@@ -102,6 +115,52 @@ describe ARQuery do
           @ar_query[:conditions].should ==
             [ "(fname = ?) AND (lname = ?)", 'Francis', 'Hwang' ]
         end
+      end
+    end
+  end
+  
+  describe '#joins <<' do
+    describe 'when there are no joins to start' do
+      before :all do
+        @ar_query = ARQuery.new
+        @ar_query.joins << :user
+      end
+      
+      it 'should result in an array of 1 join' do
+        @ar_query[:joins].should == [:user]
+      end
+    end
+    
+    describe 'when it was initialized with one join' do
+      before :all do
+        @ar_query = ARQuery.new :joins => :user
+        @ar_query.joins << :tags
+      end
+      
+      it 'should result in an array of 2 joins' do
+        @ar_query[:joins].should == [:user, :tags]
+      end
+    end
+    
+    describe 'when there are already two joins' do
+      before :all do
+        @ar_query = ARQuery.new :joins => [:user, :tags]
+        @ar_query.joins << :images
+      end
+      
+      it 'should result in 3 joins' do
+        @ar_query.joins.should == [:user, :tags, :images]
+      end
+    end
+    
+    describe 'when a duplicate join is being appended' do
+      before :all do
+        @ar_query = ARQuery.new :joins => [:user, :tags]
+        @ar_query.joins << :user
+      end
+
+      it 'should not keep the array of joins unique' do
+        @ar_query.joins.should == [:user, :tags]
       end
     end
   end
