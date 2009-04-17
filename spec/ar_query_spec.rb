@@ -1,61 +1,18 @@
-require 'activesupport'
 require File.dirname(__FILE__) + '/../lib/ar_query'
 
 describe ARQuery do
-  describe 'when trying to pass itself off as a hash' do
-    before :all do
-      @ar_query = ARQuery.new :limit => 95
-    end
-    
-    it 'should handle is_a?' do
-      # This is required because ActiveRecord.find uses args.extract_options!
-      @ar_query.is_a?(::Hash).should be_true
-    end
-    
-    it 'should respond to :except' do
-      # expected by mislav-will_paginate finder.rb
-      excepted = @ar_query.except :limit
-      excepted.should be_empty
-    end
-    
-    it 'should respond to :symbolize_keys' do
-      # expected by mislav-will_paginate finder.rb
-      @ar_query.respond_to?(:symbolize_keys).should be_true
-      symbolized = @ar_query.symbolize_keys
-      symbolized[:limit].should == 95
-    end
-    
-    it 'should respond to :update' do
-      dup = @ar_query.dup
-      dup.update :offset => 500
-      dup[:offset].should == 500
-      dup[:limit].should == 95
-    end
-  end
-  
-  describe '#dup' do
-    before :all do
-      @ar_query = ARQuery.new :limit => 95
-      @ar_query_dup = @ar_query.dup
-    end
-    
-    it 'should deep-copy its simple values hash' do
-      @ar_query_dup.delete :limit
-      @ar_query[:limit].should == 95
-    end
-  end
-  
   describe '#initialize with no values' do
     before :all do
-      @ar_query = ARQuery.new
+      ar_query = ARQuery.new
+      @hash = ar_query.to_hash
     end
     
     it 'should not have conditions' do
-      @ar_query[:conditions].should be_nil
+      @hash[:conditions].should be_nil
     end
     
     it 'should not have joins' do
-      @ar_query[:joins].should be_nil
+      @hash[:joins].should be_nil
     end
     
     it 'should not let you assign like a hash' do
@@ -71,15 +28,16 @@ describe ARQuery do
   describe '#initialize with values' do
     before :all do
       @ar_query = ARQuery.new(:order => 'id desc', :limit => 25)
+      @hash = @ar_query.to_hash
     end
     
     it 'should have those values in the hash' do
-      @ar_query[:order].should == 'id desc'
-      @ar_query[:limit].should == 25
+      @hash[:order].should == 'id desc'
+      @hash[:limit].should == 25
     end
     
     it 'should not have other values in the hash' do
-      @ar_query[:conditions].should be_nil
+      @hash[:conditions].should be_nil
     end
   end
   
@@ -91,7 +49,7 @@ describe ARQuery do
     end
     
     it 'should join the conditions with an AND' do
-      @ar_query[:conditions].should ==
+      @ar_query.to_hash[:conditions].should ==
           "(fname is not null) AND (lname is not null)"
     end
     
@@ -119,7 +77,7 @@ describe ARQuery do
     end
     
     it 'should join the conditions with an OR' do
-      @ar_query[:conditions].should ==
+      @ar_query.to_hash[:conditions].should ==
           "(fname is not null) OR (lname is not null)"
     end
   end
@@ -139,7 +97,7 @@ describe ARQuery do
         end
         
         it 'should put the bind_vars at the end of the conditions array' do
-          @ar_query[:conditions].should ==
+          @ar_query.to_hash[:conditions].should ==
             [ "(fname = ?) AND (lname = ?)", 'Francis', 'Hwang' ]
         end
       end
@@ -150,7 +108,7 @@ describe ARQuery do
         end
         
         it 'should put the bind_vars at the end of the conditions array' do
-          @ar_query[:conditions].should ==
+          @ar_query.to_hash[:conditions].should ==
             [ "(fname = ?) AND (lname = ?)", 'Francis', 'Hwang' ]
         end
       end
@@ -165,7 +123,7 @@ describe ARQuery do
       end
       
       it 'should result in an array of 1 join' do
-        @ar_query[:joins].should == [:user]
+        @ar_query.to_hash[:joins].should == [:user]
       end
     end
     
@@ -176,7 +134,7 @@ describe ARQuery do
       end
       
       it 'should result in an array of 2 joins' do
-        @ar_query[:joins].should == [:user, :tags]
+        @ar_query.to_hash[:joins].should == [:user, :tags]
       end
     end
     
@@ -187,7 +145,7 @@ describe ARQuery do
       end
       
       it 'should result in 3 joins' do
-        @ar_query.joins.should == [:user, :tags, :images]
+        @ar_query.to_hash[:joins].should == [:user, :tags, :images]
       end
     end
     
@@ -198,7 +156,7 @@ describe ARQuery do
       end
 
       it 'should not keep the array of joins unique' do
-        @ar_query.joins.should == [:user, :tags]
+        @ar_query.to_hash[:joins].should == [:user, :tags]
       end
     end
   end
@@ -210,7 +168,7 @@ describe ARQuery do
     end
     
     it 'should set [:total_entries]' do
-      @ar_query[:total_entries].should == 25
+      @ar_query.to_hash[:total_entries].should == 25
     end
   end
 end
