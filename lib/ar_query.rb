@@ -1,16 +1,13 @@
-class ARQuery < Hash
+class ARQuery
   attr_accessor :bind_vars, :boolean_join
   attr_reader   :condition_sqls, :joins
   
-  def initialize(initial_values={})
-    @initializing = true
-    super nil
-    initial_values.each do |k,v| self[k] = v; end
-    @initializing = false
+  def initialize(simple_values={})
+    @simple_values = simple_values
     @bind_vars = []
     @condition_sqls = ConditionSQLs.new
     @boolean_join = :and
-    @joins = UniqueArray.new initial_values[:joins]
+    @joins = UniqueArray.new simple_values[:joins]
   end
     
   def []( key )
@@ -22,12 +19,20 @@ class ARQuery < Hash
     elsif key == :joins
       @joins unless @joins.empty?
     else
-      super
+      @simple_values[key]
     end
   end
   
-  def []=(key, value)
-    @initializing ? super : raise(NoMethodError)
+  def is_a?(klass)
+    (klass == Hash) ? true : super
+  end
+  
+  def method_missing(sym, *args)
+    if sym == :total_entries=
+      @simple_values[:total_entries] = args.first
+    else
+      super
+    end
   end
   
   class ConditionSQLs < Array

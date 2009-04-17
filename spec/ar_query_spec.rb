@@ -164,4 +164,15 @@ describe ARQuery do
       end
     end
   end
+  
+  describe '#total_entries =' do
+    before :all do
+      @ar_query = ARQuery.new
+      @ar_query.total_entries = 25
+    end
+    
+    it 'should set [:total_entries]' do
+      @ar_query[:total_entries].should == 25
+    end
+  end
 end
