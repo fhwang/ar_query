@@ -56,14 +56,14 @@ describe ARQuery do
     it "should prevent you from appending nil" do
       lambda { @ar_query.condition_sqls << nil }.should raise_error(
         ArgumentError,
-        "Tried appending nil to ARQuery#condition_sqls: Only strings are allowed"
+        "Tried appending nil to ARQuery::Condition::SQLs: Only strings are allowed"
       )
     end
     
     it "should prevent you from appending a value besides a string" do
       lambda { @ar_query.condition_sqls << 55 }.should raise_error(
         ArgumentError,
-        "Tried appending 55 to ARQuery#condition_sqls: Only strings are allowed"
+        "Tried appending 55 to ARQuery::Condition::SQLs: Only strings are allowed"
       )
     end
   end
@@ -92,8 +92,8 @@ describe ARQuery do
       
       describe 'using appends' do
         before :all do
-          @ar_query.bind_vars << 'Francis'
-          @ar_query.bind_vars << 'Hwang'
+          @ar_query.condition_bind_vars << 'Francis'
+          @ar_query.condition_bind_vars << 'Hwang'
         end
         
         it 'should put the bind_vars at the end of the conditions array' do
@@ -104,7 +104,7 @@ describe ARQuery do
       
       describe 'using assignment' do
         before :all do
-          @ar_query.bind_vars = %w( Francis Hwang )
+          @ar_query.condition_bind_vars = %w( Francis Hwang )
         end
         
         it 'should put the bind_vars at the end of the conditions array' do
@@ -119,14 +119,14 @@ describe ARQuery do
     before :all do
       @ar_query = ARQuery.new
       @ar_query.condition_sqls << "fname = ?"
-      @ar_query.bind_vars << 'Francis'
-      @ar_query.nest_condition do |nested|
-        nested.boolean_join = :or
-        nested.condition_sqls << 'lname = ?'
-        nested.condition_sqls << 'lname = ?'
-        nested.bind_vars << 'Hwang'
-        nested.bind_vars << 'Bacon'
-        nested.ar_query.should == @ar_query
+      @ar_query.condition_bind_vars << 'Francis'
+      @ar_query.add_condition do |cond|
+        cond.boolean_join = :or
+        cond.sqls << 'lname = ?'
+        cond.sqls << 'lname = ?'
+        cond.bind_vars << 'Hwang'
+        cond.bind_vars << 'Bacon'
+        cond.ar_query.should == @ar_query
       end
     end
     
@@ -135,6 +135,21 @@ describe ARQuery do
         "(fname = ?) AND ((lname = ?) OR (lname = ?))",
         'Francis', 'Hwang', 'Bacon'
       ]
+    end
+  end
+  
+  describe "when using the nested condition syntax even though the query isn't nested" do
+    before :all do
+      @ar_query = ARQuery.new
+      @ar_query.add_condition do |cond|
+        cond.boolean_join = :or
+        cond.sqls << "fname = ?"
+        cond.bind_vars << 'Chunky'
+      end
+    end
+    
+    it 'should generate the non-nested condition in SQL' do
+      @ar_query.to_hash[:conditions].should == ["(fname = ?)", 'Chunky']
     end
   end
   

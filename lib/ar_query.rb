@@ -6,26 +6,41 @@ class ARQuery
     @base_condition = Condition.new self
     @joins = UniqueArray.new simple_values[:joins]
   end
-  
-  def has_joins?
-    !@joins.empty?
-  end
 
   def method_missing(sym, *args)
     if sym == :total_entries=
       @simple_values[:total_entries] = args.first
-    elsif [:has_conditions?, :condition_sqls, :boolean_join=, :bind_vars,
-           :bind_vars=].include?(sym)
+    elsif [:has_conditions?, :boolean_join=].include?(sym)
       @base_condition.send(sym, *args)
     else
       super
     end
   end
   
-  def nest_condition(&block)
-    @base_condition.nest_condition do |nested|
-      block.call nested
+  def add_condition(&block)
+    if @base_condition.has_conditions?
+      @base_condition.add_condition do |nested|
+        block.call nested
+      end
+    else
+      block.call @base_condition
     end
+  end
+  
+  def condition_bind_vars
+    @base_condition.bind_vars
+  end
+  
+  def condition_bind_vars=(arg)
+    @base_condition.bind_vars = arg
+  end
+  
+  def condition_sqls
+    @base_condition.sqls
+  end
+  
+  def has_joins?
+    !@joins.empty?
   end
   
   def to_hash
@@ -37,21 +52,21 @@ class ARQuery
   
   class Condition
     attr_accessor :bind_vars, :boolean_join
-    attr_reader :ar_query, :condition_sqls
+    attr_reader :ar_query, :sqls
     
     def initialize(ar_query)
       @ar_query = ar_query
       @bind_vars = []
-      @condition_sqls = SQLs.new
+      @sqls = SQLs.new
       @boolean_join = :and
       @children = []
     end
   
     def has_conditions?
-      !@condition_sqls.empty?
+      !@sqls.empty?
     end
     
-    def nest_condition(&block)
+    def add_condition(&block)
       @children << Condition.new(@ar_query)
       yield @children.last
     end
@@ -59,7 +74,7 @@ class ARQuery
     def to_conditions
       join_str = @boolean_join == :and ? ' AND ' : ' OR '
       binds = @bind_vars.dup || []
-      condition_sql_fragments = @condition_sqls.map { |c_sql| "(#{c_sql})" }
+      condition_sql_fragments = @sqls.map { |c_sql| "(#{c_sql})" }
       @children.each do |child|
         sub_conditions = child.to_conditions
         if sub_conditions.is_a?(Array)
@@ -82,7 +97,7 @@ class ARQuery
         else
           raise(
             ArgumentError,
-            "Tried appending #{elt.inspect} to ARQuery#condition_sqls: Only strings are allowed"
+            "Tried appending #{elt.inspect} to ARQuery::Condition::SQLs: Only strings are allowed"
           )
         end
       end
