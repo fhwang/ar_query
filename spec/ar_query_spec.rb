@@ -126,6 +126,7 @@ describe ARQuery do
         nested.condition_sqls << 'lname = ?'
         nested.bind_vars << 'Hwang'
         nested.bind_vars << 'Bacon'
+        nested.ar_query.should == @ar_query
       end
     end
     

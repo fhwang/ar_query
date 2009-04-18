@@ -3,7 +3,7 @@ class ARQuery
   
   def initialize(simple_values={})
     @simple_values = simple_values
-    @base_condition = Condition.new
+    @base_condition = Condition.new self
     @joins = UniqueArray.new simple_values[:joins]
   end
   
@@ -37,9 +37,10 @@ class ARQuery
   
   class Condition
     attr_accessor :bind_vars, :boolean_join
-    attr_reader :condition_sqls
+    attr_reader :ar_query, :condition_sqls
     
-    def initialize
+    def initialize(ar_query)
+      @ar_query = ar_query
       @bind_vars = []
       @condition_sqls = SQLs.new
       @boolean_join = :and
@@ -51,7 +52,7 @@ class ARQuery
     end
     
     def nest_condition(&block)
-      @children << Condition.new
+      @children << Condition.new(@ar_query)
       yield @children.last
     end
     
